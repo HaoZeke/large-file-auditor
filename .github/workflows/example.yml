@@ -18,8 +18,4 @@ jobs:
         id: base-action
         uses: ./
         with:
-          message: 'Hello, World! This is a test.'
-
-      - name: Print Output
-        id: output
-        run: echo "${{ steps.base-action.outputs.resultMessage }}"
+          file-size-threshold: "3M"
