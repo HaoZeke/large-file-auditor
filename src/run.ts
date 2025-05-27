@@ -13,6 +13,7 @@ interface LargeFileDetail {
 }
 
 export async function run(): Promise<void> {
+  let mirrorRepoPathForCleanup: string | undefined;
   try {
     // 1. Get Inputs
     const fileSizeThresholdInput: string = core.getInput(
@@ -56,23 +57,32 @@ export async function run(): Promise<void> {
     const originalRepoPath = process.cwd();
     const uniqueId = Math.random().toString(36).substring(2, 10); // Create a unique name for the mirror
     const mirrorRepoDir = `mirror-repo-${uniqueId}.git`;
-    const mirrorRepoPath = path.join(os.tmpdir(), mirrorRepoDir); // Use temp directory for mirror
+    const localMirrorRepoPath = path.join(os.tmpdir(), mirrorRepoDir); // Use a local const for clarity within try
+    mirrorRepoPathForCleanup = localMirrorRepoPath; // Assign to the outer scope variable
 
-    core.info(`Creating mirror clone at ${mirrorRepoPath}`);
-    await exec.exec("git", ["clone", "--mirror", ".", mirrorRepoPath], {
-      cwd: originalRepoPath,
-    });
+    core.info(`Creating mirror clone at ${mirrorRepoPathForCleanup}`);
+    await exec.exec(
+      "git",
+      ["clone", "--mirror", ".", mirrorRepoPathForCleanup],
+      {
+        cwd: originalRepoPath,
+      },
+    );
 
     // 4. Run git-filter-repo --analyze
     core.info("Running git-filter-repo --analyze...");
-    const analysisPath = path.join(mirrorRepoPath, "filter-repo", "analysis");
+    const analysisPath = path.join(
+      mirrorRepoPathForCleanup,
+      "filter-repo",
+      "analysis",
+    );
     try {
       // Ensure the base 'filter-repo' directory for analysis doesn't exist from a prior failed run in the same temp dir
       // This is less likely with unique mirror paths but good for robustness.
       // await fs.rm(path.join(mirrorRepoPath, 'filter-repo'), { recursive: true, force: true });
 
       await exec.exec("git-filter-repo", ["--analyze"], {
-        cwd: mirrorRepoPath,
+        cwd: mirrorRepoPathForCleanup,
       });
     } catch (error: any) {
       core.setFailed(
@@ -194,21 +204,17 @@ export async function run(): Promise<void> {
     }
   } finally {
     // 7. Clean up mirror repo
-    const mirrorRepoDirPrefix = `mirror-repo-`;
-    const tempDir = os.tmpdir();
-    try {
-      const items = await fs.readdir(tempDir);
-      for (const item of items) {
-        if (item.startsWith(mirrorRepoDirPrefix)) {
-          const itemPath = path.join(tempDir, item);
-          core.info(`Cleaning up ${itemPath}`);
-          await fs.rm(itemPath, { recursive: true, force: true });
-        }
+    if (mirrorRepoPathForCleanup) {
+      core.info(`Cleaning up ${mirrorRepoPathForCleanup}`);
+      try {
+        await fs.rm(mirrorRepoPathForCleanup, { recursive: true, force: true });
+      } catch (cleanupError: any) {
+        core.warning(
+          `Failed to cleanup mirror repository ${mirrorRepoPathForCleanup}: ${cleanupError.message}`,
+        );
       }
-    } catch (cleanupError: any) {
-      core.warning(
-        `Failed to cleanup mirror repositories: ${cleanupError.message}`,
-      );
+    } else {
+      core.info("No mirror repository path was set for cleanup.");
     }
   }
 }
