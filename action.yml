@@ -1,24 +1,30 @@
-name: Unique of your action name
-description: Description of your action
-author: Your GitHub username
+name: 'Large File Auditor'
+description: 'Checks for files exceeding a size threshold using git-filter-repo analysis and flags the commit.'
+author: 'Rohit Goswami'
 
-# The action's inputs
 inputs:
-  message:
-    description: A greeting message
-    default: Hello, World!
+  file-size-threshold:
+    description: 'Maximum allowed file size (e.g., 1M, 500K, 2G). Files larger than this will cause a failure.'
+    required: true
+    default: '1M'
+  git-filter-repo-version:
+    description: 'Version of git-filter-repo to install.'
+    required: false
+    default: '2.47.0'
+  github-token:
+    description: 'GitHub token to post comments on PRs if large files are found. Not required if only failing the action.'
+    required: false
 
-# The action's outputs
 outputs:
-  resultMessage:
-    description: Result message
+  large-files-found:
+    description: 'A boolean indicating if large files were found (true/false).'
+  large-files-list: # More structured output
+    description: 'A JSON string array of detected large files with details (path, size, blob SHA).'
 
-# Branding
-branding:
-  icon: activity
-  color: purple
-
-# The action's runs
 runs:
-  using: node20
-  main: dist/index.js
+  using: 'node20' # Or node16
+  main: 'dist/index.js'
+
+branding:
+  icon: 'search' # Feather icon
+  color: 'blue'

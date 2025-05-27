@@ -1,6 +1,6 @@
 # MIT License
 
-Copyright (c) Hywax
+Copyright (c) Rohit Goswami <rgoswami[at]ieee[dot]org>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
