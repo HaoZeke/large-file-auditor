@@ -150,7 +150,6 @@ export async function run(): Promise<void> {
           if (filePath) { // Only attempt if a filePath is available
             core.debug(`Searching for commits related to blob ${blobSha} at path ${filePath}`);
             let commitLogOutput = '';
-            const MAX_COMMITS_TO_CHECK = 10; // How many recent commits on the path to check
             const MAX_COMMITS_TO_REPORT = 3;  // How many relevant commits to report
 
             try {
@@ -161,7 +160,6 @@ export async function run(): Promise<void> {
                   'log',
                   '--all', // Search across all branches
                   '--pretty=format:%H', // Get full commit SHAs
-                  `--max-count=${MAX_COMMITS_TO_CHECK}`,
                   '--', // Important separator
                   filePath,
                 ],
