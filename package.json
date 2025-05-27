@@ -61,5 +61,6 @@
   },
   "lint-staged": {
     "*.ts": "pnpm run lint"
-  }
+  },
+  "version": "0.0.1"
 }
