@@ -161,6 +161,7 @@ export async function run(): Promise<void> {
         errorMessage += `  Size: ${file.sizeHuman}\n`;
       });
       errorMessage += `\nPlease remove these files from the commit history using git filter-repo locally, then force-push the cleaned branch.`;
+      errorMessage += `\nGet the right commits by git log --all --find-object=$BLOBID`;
       errorMessage += `\nConsult the git-filter-repo documentation: https://github.com/newren/git-filter-repo`;
 
       core.setFailed(errorMessage);
