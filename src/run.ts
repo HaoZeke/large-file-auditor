@@ -248,5 +248,3 @@ function formatBytes(bytes: number, decimals = 2): string {
     return `${(bytes / Math.pow(k, sizes.length - 1)).toFixed(dm)} ${sizes[sizes.length - 1]}`;
   return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + " " + sizes[i];
 }
-
-run();
