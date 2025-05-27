@@ -1,0 +1,64 @@
+{
+  "name": "github-actions-template",
+  "type": "module",
+  "private": true,
+  "description": "A template for creating GitHub Actions",
+  "author": {
+    "name": "hywax",
+    "email": "me@hywax.space"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/hywax/github-action-template",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hywax/github-action-templat.git"
+  },
+  "bugs": {
+    "url": "https://github.com/hywax/github-action-template/issues"
+  },
+  "keywords": [
+    "github",
+    "actions",
+    "template"
+  ],
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "engines": {
+    "node": ">=20.19.2"
+  },
+  "scripts": {
+    "build": "tsc && vite build",
+    "release": "pnpm test && pnpm build && changelogen --release && git push --follow-tags",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "test": "vitest --run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest --coverage",
+    "typecheck": "tsc --noEmit",
+    "prepare": "husky"
+  },
+  "dependencies": {
+    "@actions/core": "^1.11.1",
+    "@actions/github": "^6.0.1"
+  },
+  "devDependencies": {
+    "@antfu/eslint-config": "^2.27.3",
+    "@commitlint/cli": "^19.8.1",
+    "@commitlint/config-conventional": "^19.8.1",
+    "@vitest/coverage-v8": "^3.1.4",
+    "changelogen": "^0.6.1",
+    "eslint": "^9.27.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.0.0",
+    "typescript": "^5.8.3",
+    "vite": "^5.4.19",
+    "vitest": "^3.1.4"
+  },
+  "lint-staged": {
+    "*.ts": "pnpm run lint"
+  }
+}
