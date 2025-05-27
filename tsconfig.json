@@ -1,9 +1,10 @@
 {
   "compilerOptions": {
     "target": "ESNext",
-    "lib": ["ESNext", "DOM"],
+    "lib": ["ESNext"],
     "rootDir": "./src",
     "module": "ESNext",
+    "skipLibCheck": true,
     "moduleResolution": "Node",
     "resolveJsonModule": true,
     "strict": true,
