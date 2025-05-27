@@ -10,6 +10,7 @@ interface LargeFileDetail {
   blobSha: string;
   sizeBytes: number;
   sizeHuman: string;
+  commits?: string[];
 }
 
 export async function run(): Promise<void> {
@@ -136,16 +137,85 @@ export async function run(): Promise<void> {
         // match[3] is packed size, we ignore it
         const filePath = match[4].trim(); // The rest of the line is the path
 
+
         if (unpackedSizeBytes >= thresholdBytes) {
-          detectedLargeFiles.push({
-            path: filePath, // Path is now directly available
+          const largeFileEntry: LargeFileDetail = { // Use the interface
+            path: filePath,
             blobSha: blobSha,
             sizeBytes: unpackedSizeBytes,
-            sizeHuman: formatBytes(unpackedSizeBytes), // Your existing helper
-          });
+            sizeHuman: formatBytes(unpackedSizeBytes),
+            commits: [], // Initialize commits array
+          };
+
+          if (filePath) { // Only attempt if a filePath is available
+            core.debug(`Searching for commits related to blob ${blobSha} at path ${filePath}`);
+            let commitLogOutput = '';
+            const MAX_COMMITS_TO_CHECK = 10; // How many recent commits on the path to check
+            const MAX_COMMITS_TO_REPORT = 3;  // How many relevant commits to report
+
+            try {
+              // Get recent commit SHAs that affected this path
+              await exec.exec(
+                'git',
+                [
+                  'log',
+                  '--all', // Search across all branches
+                  '--pretty=format:%H', // Get full commit SHAs
+                  `--max-count=${MAX_COMMITS_TO_CHECK}`,
+                  '--', // Important separator
+                  filePath,
+                ],
+                {
+                  cwd: mirrorRepoPath, // Run in the mirror clone
+                  listeners: {
+                    stdout: (data: Buffer) => { commitLogOutput += data.toString(); },
+                  },
+                  silent: true, // Keep CI logs cleaner unless debugging
+                  ignoreReturnCode: true, // Log can fail if path is new/weird
+                },
+              );
+
+              const potentialCommitShas = commitLogOutput.split('\n').filter(sha => sha.trim().length > 0);
+              core.debug(`Found ${potentialCommitShas.length} potential commits for path ${filePath}`);
+
+              for (const commitSha of potentialCommitShas) {
+                if (largeFileEntry.commits && largeFileEntry.commits.length >= MAX_COMMITS_TO_REPORT) {
+                  break; // Stop if we have enough reported commits
+                }
+
+                let blobShaInCommit = '';
+                try {
+                  await exec.exec(
+                    'git',
+                    ['rev-parse', `${commitSha}:${filePath}`], // Get blob SHA for path in this commit
+                    {
+                      cwd: mirrorRepoPath,
+                      listeners: {
+                        stdout: (data: Buffer) => { blobShaInCommit += data.toString().trim(); },
+                      },
+                      silent: true,
+                      ignoreReturnCode: true, // Path might not exist in this specific commit, or blob could be different
+                    },
+                  );
+
+                  core.debug(`In commit ${commitSha.substring(0,7)}, path ${filePath} has blob ${blobShaInCommit || 'N/A'}`);
+                  if (blobShaInCommit === blobSha) {
+                    largeFileEntry.commits?.push(commitSha.substring(0, 7)); // Add short SHA
+                  }
+                } catch (revParseError: any) {
+                  core.debug(`Error checking blob in commit ${commitSha.substring(0,7)} for path ${filePath}: ${revParseError.message}`);
+                }
+              }
+            } catch (logError: any) {
+              core.warning(`Could not retrieve commit history for path ${filePath}: ${logError.message}`);
+            }
+            if (largeFileEntry.commits?.length === 0) {
+                core.debug(`No recent commits found where blob ${blobSha} matches path ${filePath}`);
+            }
+          }
+          detectedLargeFiles.push(largeFileEntry);
         }
       }
-    }
 
     // 6. Set Outputs & Action Status
     core.setOutput("large-files-found", detectedLargeFiles.length > 0);
