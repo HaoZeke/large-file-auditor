@@ -1,25 +1,25 @@
 {
-  "name": "github-actions-template",
+  "name": "large-file-auditor",
   "type": "module",
   "private": true,
   "description": "A template for creating GitHub Actions",
   "author": {
-    "name": "hywax",
-    "email": "me@hywax.space"
+    "name": "HaoZeke",
+    "email": "HaoZeke@yandex.com"
   },
   "license": "MIT",
-  "homepage": "https://github.com/hywax/github-action-template",
+  "homepage": "https://github.com/HaoZeke/large-file-auditor",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/hywax/github-action-templat.git"
+    "url": "git+https://github.com/HaoZeke/large-file-auditor.git"
   },
   "bugs": {
-    "url": "https://github.com/hywax/github-action-template/issues"
+    "url": "https://github.com/HaoZeke/large-file-auditor/issues"
   },
   "keywords": [
     "github",
     "actions",
-    "template"
+    "large-file"
   ],
   "exports": {
     ".": {
