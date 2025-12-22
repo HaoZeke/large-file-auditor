@@ -10,7 +10,7 @@ Ensures no large files sneak in, and pin-points the incriminating commit.
 
 ```shell
 git clone https://github.com/HaoZeke/large-file-auditor.git
-cd github-action-template
+cd large-file-auditor
 pnpm install
 ```
 

@@ -4839,7 +4839,7 @@ async function Yu() {
   }
   return await WebAssembly.instantiate(e, {
     env: {
-      /* eslint-disable camelcase */
+       
       wasm_on_url: (t, s, r) => 0,
       wasm_on_status: (t, s, r) => {
         tA.strictEqual(VA.ptr, t);
@@ -4864,7 +4864,7 @@ async function Yu() {
         return VA.onBody(new $r(Ge.buffer, o, r)) || 0;
       },
       wasm_on_message_complete: (t) => (tA.strictEqual(VA.ptr, t), VA.onMessageComplete() || 0)
-      /* eslint-enable camelcase */
+       
     }
   });
 }
